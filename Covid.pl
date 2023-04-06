@@ -282,23 +282,19 @@ save_fact(TI):-
         send(Lbl15,append,'You are at risk for COVID'),Tval is 1, Mval is 1),
 
         send(A,open),
-        updatestats(Tval, Rval, Kval, Oval, Mval, Sevval).
+        updatestats(Tval, Kval, Oval, Mval, Sevval).
 
-        updatestats(Tval, Rval, Kval, Oval, Mval, Sevval):-  statistics(Total,Regvar,Krakvar,Omivar,Mildsymp,Sevsymp), Newtotal is Total + Tval,
-        Newregvar is Regvar + Rval,
+        updatestats(Tval, Kval, Oval, Mval, Sevval):-  statistics(Total,Krakvar,Omivar,Mildsymp,Sevsymp), Newtotal is Total + Tval,
         Newkrakvar is Krakvar + Kval,
         Newomivar is Omivar + Oval,
         Newmildsymp is Mildsymp + Mval,
         Newsevsymp is Sevsymp + Sevval,
-        retractall(statistics(,,,,_)),asserta(statistics(Newtotal,Newregvar,NewKrakvar,Newomivar,Newmildsymp,Newsevsymp)).
+        retractall(statistics(,,,,_)),asserta(statistics(Newtotal,NewKrakvar,Newomivar,Newmildsymp,Newsevsymp)).
 
         displaystats:-
-        statistics(Newtotal,Newregvar,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp),
+        statistics(Newtotal,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp),
         nl,write('The Total number of people with Covid-19 is: '), write(Newtotal),
-
-        Regpercent is Newregvar/Newtotal * 100,
-        nl,write('The percentage of Regular variant recorded: '), write(Regpercent),write('%'),
-        
+     
         Krakpercent is NewKrakvar/Newtotal * 100,
         nl,nl,write('The percentage of Kraken variant recorded: '), write(Krakpercent),write('%'),
     
@@ -310,6 +306,11 @@ save_fact(TI):-
         Sevpercent is Newsevsymp/Newtotal * 100,
         nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%').
 
+
+        %The percentage of affected persons that have underlying conditions
+
+        
+        %The top three underlying conditions of affected persons
 
 %Function to give advice to MOH and alert authorities
     covid_advice(Symptoms) :-
@@ -335,5 +336,3 @@ save_fact(TI):-
     writeln('Message sent to authorities.'),
     % Return true to indicate success
     true.
-
-
