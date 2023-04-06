@@ -180,7 +180,7 @@ save_fact(TI):-
     send(D,append,new(Name, text_item(name))),
     send(D,append,new(Age, text_item(age))),
     send(D,append,new(Sex, menu(sex,marked))),
-    send(D,append,new(Fahrenheit, text_item(Fahrenheit))),
+    send(D,append,new(Fahrenheit, text_item(fahrenheit))),
     send(D,append,new(Fever,menu('Do you have fever',marked))),
     send(D,append,new(Cough,menu('Do you have Dry cough',marked))),
     send(D,append,new(Fatigue,menu('Do you get tired easy',marked))),
