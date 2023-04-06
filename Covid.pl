@@ -180,7 +180,7 @@ save_fact(TI):-
     send(D,append,new(Name, text_item(name))),
     send(D,append,new(Age, text_item(age))),
     send(D,append,new(Sex, menu(sex,marked))),
-    send(D,append,new(Celsius, text_item(celsius))),
+    send(D,append,new(Fahrenheit, text_item(Fahrenheit))),
     send(D,append,new(Fever,menu('Do you have fever',marked))),
     send(D,append,new(Cough,menu('Do you have Dry cough',marked))),
     send(D,append,new(Fatigue,menu('Do you get tired easy',marked))),
@@ -226,17 +226,17 @@ save_fact(TI):-
     send(Chronic_liver_disease,append,yes), send(Chronic_liver_disease,append,no),
 
     send(Age, type, int),
-    send(Celsius, type, int),
+    send(Fahrenheit, type, int),
 
 
     send(D,append,button(accept,message(@prolog,save_main,   Name?selection, Fever?selection, Cough?selection,
                                         Fatigue?selection, Loss_of_taste?selection,
-                                        Headache?selection , Sex?selection, Celsius?selection, Sore_throat?selection,
+                                        Headache?selection , Sex?selection, Fahrenheit?selection, Sore_throat?selection,
                                         Runny_nose?selection, Sneezing?selection))),
 
     send(D,open).
 
-    save_main(Name,Fever,Cough,Fatigue,Loss_of_taste,Headache,Sex,Celsius,Sore_throat,Runny_nose,Sneezing):-
+    save_main(Name,Fever,Cough,Fatigue,Loss_of_taste,Headache,Sex,Fahrenheit,Sore_throat,Runny_nose,Sneezing):-
 
         new(A,dialog('Diagnosis of Results')),
         send(A,append,new(Lbl1234,label)),send(Lbl1234,append,'Name :'),
@@ -245,7 +245,7 @@ save_fact(TI):-
         send(A,append,new(Lbl41,label)),send(Lbl41,append,'Gender :'),
         send(A,append,new(Lbl4,label)), send(Lbl4,append,Sex),
 
-        Temperature is (Celsius*9/5)+32,
+        Temperature is (Fahrenheit - 32) * 5/9,
         (Temperature >=100.4 -> Tempval is 1; Tempval is 0),
         send(A,append,new(Lbl511,label)), send(Lbl511,append,'Your temperature is : '),
         send(A,append,new(Lbl512,label)), send(Lbl512,append,Temperature),
