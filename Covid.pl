@@ -307,10 +307,31 @@ save_fact(TI):-
         nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%').
 
 
+         % Calculate percentage of people with underlying conditions
+        percentage_underlying_conditions(P) :-
+        statistics(_, _, _, _, , Total),
+        statistics(, _, _, _, _, Underlying),
+        P is (Underlying / Total) * 100.
+        
         %The percentage of affected persons that have underlying conditions
+        percentage_underlying_conditions(P) :-
+        findall(1, (infection(I), infection_type(I, T), covid_symptoms(T, _), underlying_conditions(T, _)), Infected),
+        length(Infected, InfectedCount),
+        findall(1, (infection(I), infection_type(I, T), covid_symptoms(T, _)), Total),
+        length(Total, TotalCount),
+        (TotalCount > 0 -> P is (InfectedCount / TotalCount) * 100 ; P is 0).
 
         
-        %The top three underlying conditions of affected persons
+    %The top three underlying conditions of affected persons
+    top_conditions(TopThree) :-
+    findall(Count-Condition, (statistics(0,0,0,0,0,Count), underlying_conditions(_, Condition)), Counts),
+    keysort(Counts, SortedCounts),
+    reverse(SortedCounts, Reversed),
+    take(3, Reversed, TopThree).
+
+take(N, List, SubList) :-
+    length(SubList, N),
+    append(SubList, _, List).
 
 %Function to give advice to MOH and alert authorities
     covid_advice(Symptoms) :-
