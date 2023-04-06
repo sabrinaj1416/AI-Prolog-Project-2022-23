@@ -1,5 +1,7 @@
-%Shanice Facey - 1701438
-%Sabrina Johnson - 1901165
+%Shanice Facey -1701438
+%Kevin Campbell- 1900390
+%Mario Cross-1901901
+%Sabrina Johnson- 1901165
 :- use_module(library(pce)).
 :-dynamic statistics/1.
 :-dynamic statistics/2.
@@ -12,7 +14,7 @@ statistics(0,0,0,0,0).
 infection(covid).
 
 infection_type(covid,regular).
-infection_type(covid,delta).
+infection_type(covid,kraken).
 infection_type(covid,omicron).
 
 covid_symptoms(regular,cough).
@@ -22,11 +24,11 @@ covid_symptoms(regular, fatigue).
 covid_symptoms(regular,'loss of tatse').
 covid_symptoms(regular,'elevated temperature').
 
-covid_symptoms(delta,cough).
-covid_symptoms(delta,'sore throat').
-covid_symptoms(delta,headache).
-covid_symptoms(delta, fatigue).
-covid_symptoms(delta,'runny nose').
+covid_symptoms(kraken,cough).
+covid_symptoms(kraken,'sore throat').
+covid_symptoms(kraken,headache).
+covid_symptoms(kraken, fatigue).
+covid_symptoms(kraken, diarrhea).
 
 covid_symptoms(omicron,sneezing).
 covid_symptoms(omicron,'sore throat').
@@ -35,15 +37,12 @@ covid_symptoms(omicron, fatigue).
 covid_symptoms(omicron,'runny nose').
 
 underlying_conditions(omicron,stroke).
-underlying_conditions(omicron,tuberculosis).
 underlying_conditions(omicron,cancer).
 underlying_conditions(omicron,dementia).
 underlying_conditions(omicron,diabetes).
 underlying_conditions(omicron,alzheimers).
 underlying_conditions(omicron,hiv).
 underlying_conditions(omicron,'heart conditions').
-underlying_conditions(omicron,'sickle cell').
-underlying_conditions(omicron,'chronic lung disease').
 underlying_conditions(omicron,'chronic liver disease').
 
 %Underlying Conditions
@@ -158,7 +157,7 @@ layoutdemo1 :-
         send(BTS, gap, size(0, 30)),
         send(BTS, append, button(add_covid_fact, message(@prolog,addfacts))),
         send(BTS, append, button(add_omicron_fact, message(@prolog,addfacts))),
-        send(BTS, append, button(add_delta_fact, message(@prolog,addfacts))),
+        send(BTS, append, button(add_kraken_fact, message(@prolog,addfacts))),
         send(BTS, alignment, center),
         send(D, open).
 
@@ -180,7 +179,7 @@ save_fact(TI):-
     send(D,append,new(Name, text_item(name))),
     send(D,append,new(Age, text_item(age))),
     send(D,append,new(Sex, menu(sex,marked))),
-    send(D,append,new(Celsius, text_item(celsius))),
+    send(D,append,new(Fahrenheit, text_item(fahrenheit))),
     send(D,append,new(Fever,menu('Do you have fever',marked))),
     send(D,append,new(Cough,menu('Do you have Dry cough',marked))),
     send(D,append,new(Fatigue,menu('Do you get tired easy',marked))),
@@ -188,20 +187,18 @@ save_fact(TI):-
     send(D,append,new(Headache,menu('Do you have a headache',marked))),
     send(D,append,new(Sore_throat,menu('Do you have a sore throat',marked))),
     send(D,append,new(Runny_nose,menu('Do you have a Runny nose',marked))),
+    send(D,append,new(Diarrhea,menu('Do you have Diarrhea',marked))),
     send(D,append,new(Sneezing,menu('Do you have a Sneeze',marked))),
     send(D,append,new(label)),
     send(D,append,new(Empty2,text('Underlying Conditions'))),
     send(Empty2,alignment,center), send(Empty2,font,bold),
     send(D,append,new(Stroke,menu('Do you suffer from Stroke',marked))),
-    send(D,append,new(Tuberculosis,menu('Do you suffer from Tuberculosis',marked))),
     send(D,append,new(Cancer,menu('Do you have Cancer',marked))),
     send(D,append,new(Dementia,menu('Do you suffer from Dementia',marked))),
     send(D,append,new(Diabetes,menu('Do you suffer from Diabetes',marked))),
     send(D,append,new(Alzheimers,menu('Do you suffer from Alzheimers',marked))),
     send(D,append,new(Hiv,menu('Do you have Hiv',marked))),
     send(D,append,new(Heart_conditions,menu('Do you suffer from Heart Conditions',marked))),
-    send(D,append,new(Sickle_cell,menu('Do you suffer from Sickel Cell',marked))),
-    send(D,append,new(Chronic_lung_disease,menu('Do you suffer from Chronic Lung Disease',marked))),
     send(D,append,new(Chronic_liver_disease,menu('Do you suffer from chronic Liver Disease',marked))),
 
     send(Sex, append, female),              send(Sex, append, male),
@@ -212,31 +209,29 @@ save_fact(TI):-
     send(Headache, append, yes),            send(Headache, append, no),
     send(Sore_throat, append, yes),         send(Sore_throat, append,no),
     send(Runny_nose,append, yes),           send(Runny_nose,append, no),
+    send(Diarrhea, append, yes),            send(Diarrhea, append, no),
     send(Sneezing,append, yes),             send(Sneezing,append, no),
     send(Stroke,append,yes),                send(Stroke,append,no),
-    send(Tuberculosis,append,yes),          send(Tuberculosis,append,no),
     send(Cancer,append,yes),                send(Cancer,append,no),
     send(Dementia,append,yes),              send(Dementia,append,no),
     send(Diabetes,append,yes),              send(Diabetes,append,no),
     send(Alzheimers,append,yes),            send(Alzheimers,append,no),
     send(Hiv,append,yes),                   send(Hiv,append,no),
     send(Heart_conditions,append,yes),      send(Heart_conditions,append,no),
-    send(Sickle_cell,append,yes),           send(Sickle_cell,append,no),
-    send(Chronic_lung_disease,append,yes),  send(Chronic_lung_disease,append,no),
     send(Chronic_liver_disease,append,yes), send(Chronic_liver_disease,append,no),
 
     send(Age, type, int),
-    send(Celsius, type, int),
+    send(Fahrenheit, type, int),
 
 
     send(D,append,button(accept,message(@prolog,save_main,   Name?selection, Fever?selection, Cough?selection,
                                         Fatigue?selection, Loss_of_taste?selection,
-                                        Headache?selection , Sex?selection, Celsius?selection, Sore_throat?selection,
-                                        Runny_nose?selection, Sneezing?selection))),
+                                        Headache?selection , Sex?selection, Fahrenheit?selection, Sore_throat?selection,
+                                        Runny_nose?selection,Diarrhea?selection, Sneezing?selection))),
 
     send(D,open).
 
-    save_main(Name,Fever,Cough,Fatigue,Loss_of_taste,Headache,Sex,Celsius,Sore_throat,Runny_nose,Sneezing):-
+    save_main(Name,Fever,Cough,Fatigue,Loss_of_taste,Headache,Sex,Fahrenheit,Sore_throat,Runny_nose,Diarrhea,Sneezing):-
 
         new(A,dialog('Diagnosis of Results')),
         send(A,append,new(Lbl1234,label)),send(Lbl1234,append,'Name :'),
@@ -245,7 +240,7 @@ save_fact(TI):-
         send(A,append,new(Lbl41,label)),send(Lbl41,append,'Gender :'),
         send(A,append,new(Lbl4,label)), send(Lbl4,append,Sex),
 
-        Temperature is (Celsius*9/5)+32,
+        Temperature is (Fahrenheit - 32) * 5/9,
         (Temperature >=100.4 -> Tempval is 1; Tempval is 0),
         send(A,append,new(Lbl511,label)), send(Lbl511,append,'Your temperature is : '),
         send(A,append,new(Lbl512,label)), send(Lbl512,append,Temperature),
@@ -264,10 +259,13 @@ save_fact(TI):-
 
         (Runny_nose == 'yes' -> Runval is 1; Runval is 0),
 
+        (Diarrhea == 'yes' -> Dihval is 1; Dihval is 0),
+
         (Sneezing == 'yes' -> Sneeval is 1; Sneeval is 0),
 
+
          %Add risk values
-        Infect is Feval+Dryval+Tiredval+Shortval+Pressval+Tempval+Sval+Runval+Sneeval,
+        Infect is Feval+Dryval+Tiredval+Shortval+Pressval+Tempval+Sval+Runval+Dihval+Sneeval,
 
         %If total risk value >= 3 patient at risk
         send(A,append,new(Lbl15,label)),
@@ -275,8 +273,8 @@ save_fact(TI):-
         ((Infect >=3, Sneeval = 1) ->
             send(Lbl15,append,'You are at risk for COVID (Omicron)'),Tval is 1, Oval is 1,Sevval is 1;
 
-        (Infect >=3, Sval = 1 , Runval = 1) ->
-            send(Lbl15,append,'You are at risk for COVID (delta)'),Tval is 1, Dval is 1, Mval is 1;
+        (Infect >=3, Sval = 1 , Dihval = 1) ->
+            send(Lbl15,append,'You are at risk for COVID (kraken)'),Tval is 1, Kval is 1, Mval is 1;
 
         (Infect =< 3 ->
         send(Lbl15,append,'You are not at risk for COVID'));
@@ -284,23 +282,58 @@ save_fact(TI):-
         send(Lbl15,append,'You are at risk for COVID'),Tval is 1, Mval is 1),
 
         send(A,open),
-        updatestats(Tval, Dval, Oval, Mval, Sevval).
+        updatestats(Tval, Rval, Kval, Oval, Mval, Sevval).
 
-      updatestats(Tval, Dval, Oval, Mval, Sevval):-  statistics(Total,Deltavar,Omivar,Mildsymp,Sevsymp), Newtotal is Total + Tval,
-       Newdeltavar is Deltavar + Dval,
-       Newomivar is Omivar + Oval,
-       Newmildsymp is Mildsymp + Mval,
-       Newsevsymp is Sevsymp + Sevval,
-       retractall(statistics(,,,,_)),asserta(statistics(Newtotal,Newdeltavar,Newomivar,Newmildsymp,Newsevsymp)).
+        updatestats(Tval, Rval, Kval, Oval, Mval, Sevval):-  statistics(Total,Regvar,Krakvar,Omivar,Mildsymp,Sevsymp), Newtotal is Total + Tval,
+        Newregvar is Regvar + Rval,
+        Newkrakvar is Krakvar + Kval,
+        Newomivar is Omivar + Oval,
+        Newmildsymp is Mildsymp + Mval,
+        Newsevsymp is Sevsymp + Sevval,
+        retractall(statistics(,,,,_)),asserta(statistics(Newtotal,Newregvar,NewKrakvar,Newomivar,Newmildsymp,Newsevsymp)).
 
-       displaystats:-
-       statistics(Newtotal,Newdeltavar,Newomivar,Newmildsymp,Newsevsymp),
-       nl,write('The Total number of people with Covid-19 is: '), write(Newtotal),
-       Deltapercent is Newdeltavar/Newtotal * 100,
-       nl,nl,write('The percentage of Delta variant recorded: '), write(Deltapercent),write('%'),
-       Omipercent is Newomivar/Newtotal * 100,
-       nl,write('The percentage of Omicron variant recorded: '), write(Omipercent),write('%'),
+        displaystats:-
+        statistics(Newtotal,Newregvar,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp),
+        nl,write('The Total number of people with Covid-19 is: '), write(Newtotal),
+
+        Regpercent is Newregvar/Newtotal * 100,
+        nl,write('The percentage of Regular variant recorded: '), write(Regpercent),write('%'),
+        
+        Krakpercent is NewKrakvar/Newtotal * 100,
+        nl,nl,write('The percentage of Kraken variant recorded: '), write(Krakpercent),write('%'),
+    
+        Omipercent is Newomivar/Newtotal * 100,
+        nl,nl,write('The percentage of Omicron variant recorded: '), write(Omipercent),write('%'),
+              
         Mildpercent is Newmildsymp/Newtotal * 100,
-       nl,write('The percentage of Mild Symptoms recorded: '), write(Mildpercent),write('%'),
+        nl,write('The percentage of Mild Symptoms recorded: '), write(Mildpercent),write('%'),
         Sevpercent is Newsevsymp/Newtotal * 100,
-       nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%').
+        nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%').
+
+
+%Function to give advice to MOH and alert authorities
+    covid_advice(Symptoms) :-
+    assert(reports(Symptoms)),
+    count_reports(Symptoms, Count),
+    (   Count > 5
+    ->  alert_authorities(Symptoms, Count),
+        write('There is a spike in reports of persons with '), write(Symptoms), nl,
+        write('The authorities have been alerted.'), nl
+    ;   write('There are '), write(Count), write(' reports of persons with '), write(Symptoms), nl
+    ).
+
+    count_reports(Symptoms, Count) :-
+        findall(1, reports(Symptoms), List),
+        length(List, Count).
+
+    alert_authorities(Symptoms, Count) :-
+        % Check if the count of symptoms is above a certain threshold
+    Count >= 3,
+    % Construct a message with the symptoms and the count
+    format('Alert! Patient has ~w symptoms: ~w', [Count, Symptoms]),
+    % Send the message to the authorities (in this case, just printing it to the console)
+    writeln('Message sent to authorities.'),
+    % Return true to indicate success
+    true.
+
+
