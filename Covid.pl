@@ -1,4 +1,5 @@
-%Shanice Facey -1701438
+%Shanice Facey - 1701438
+%Sabrina Johnson - 1901165
 :- use_module(library(pce)).
 :-dynamic statistics/1.
 :-dynamic statistics/2.
