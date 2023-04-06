@@ -1,15 +1,17 @@
-%Shanice Facey -1701438
-%Kevin Campbell- 1900390
-%Mario Cross-1901901
-%Sabrina Johnson- 1901165
-:- use_module(library(pce)).
+%Shanice Facey - 1701438
+%Kevin Campbell - 1900390
+%Mario Cross - 1901901
+%Sabrina Johnson - 1901165
+
+:-use_module(library(pce)).
 :-dynamic statistics/1.
 :-dynamic statistics/2.
 :-dynamic statistics/3.
 :-dynamic statistics/4.
 :-dynamic statistics/5.
+:-dynamic statistics/6.
 
-statistics(0,0,0,0,0).
+statistics(0,0,0,0,0,0).
 
 infection(covid).
 
@@ -36,14 +38,22 @@ covid_symptoms(omicron,headache).
 covid_symptoms(omicron, fatigue).
 covid_symptoms(omicron,'runny nose').
 
-underlying_conditions(omicron,stroke).
-underlying_conditions(omicron,cancer).
-underlying_conditions(omicron,dementia).
-underlying_conditions(omicron,diabetes).
-underlying_conditions(omicron,alzheimers).
-underlying_conditions(omicron,hiv).
-underlying_conditions(omicron,'heart conditions').
-underlying_conditions(omicron,'chronic liver disease').
+underlying_conditions(omicron,stroke) :-
+assertz(statistics(0,0,0,0,0,1)).
+underlying_conditions(omicron,cancer) :-
+assertz(statistics(0,0,0,0,0,1)).
+underlying_conditions(omicron,dementia) :-
+assertz(statistics(0,0,0,0,0,1)).
+underlying_conditions(omicron,diabetes) :-
+assertz(statistics(0,0,0,0,0,1)).
+underlying_conditions(omicron,alzheimers) :-
+assertz(statistics(0,0,0,0,0,1)).
+underlying_conditions(omicron,hiv) :-
+assertz(statistics(0,0,0,0,0,1)).
+underlying_conditions(omicron,'heart conditions') :-
+assertz(statistics(0,0,0,0,0,1)).
+underlying_conditions(omicron,'chronic liver disease') :-
+assertz(statistics(0,0,0,0,0,1)).
 
 %Underlying Conditions
 cond_list :-
@@ -282,23 +292,19 @@ save_fact(TI):-
         send(Lbl15,append,'You are at risk for COVID'),Tval is 1, Mval is 1),
 
         send(A,open),
-        updatestats(Tval, Rval, Kval, Oval, Mval, Sevval).
+        updatestats(Tval, Kval, Oval, Mval, Sevval).
 
-        updatestats(Tval, Rval, Kval, Oval, Mval, Sevval):-  statistics(Total,Regvar,Krakvar,Omivar,Mildsymp,Sevsymp), Newtotal is Total + Tval,
-        Newregvar is Regvar + Rval,
+        updatestats(Tval, Kval, Oval, Mval, Sevval):-  statistics(Total,Krakvar,Omivar,Mildsymp,Sevsymp), Newtotal is Total + Tval,
         Newkrakvar is Krakvar + Kval,
         Newomivar is Omivar + Oval,
         Newmildsymp is Mildsymp + Mval,
         Newsevsymp is Sevsymp + Sevval,
-        retractall(statistics(,,,,_)),asserta(statistics(Newtotal,Newregvar,NewKrakvar,Newomivar,Newmildsymp,Newsevsymp)).
+        retractall(statistics(,,,,_)),asserta(statistics(Newtotal,NewKrakvar,Newomivar,Newmildsymp,Newsevsymp)).
 
         displaystats:-
-        statistics(Newtotal,Newregvar,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp),
+        statistics(Newtotal,NewKrakvar, Newomivar,Newmildsymp,Newsevsymp),
         nl,write('The Total number of people with Covid-19 is: '), write(Newtotal),
-
-        Regpercent is Newregvar/Newtotal * 100,
-        nl,write('The percentage of Regular variant recorded: '), write(Regpercent),write('%'),
-        
+     
         Krakpercent is NewKrakvar/Newtotal * 100,
         nl,nl,write('The percentage of Kraken variant recorded: '), write(Krakpercent),write('%'),
     
@@ -310,6 +316,21 @@ save_fact(TI):-
         Sevpercent is Newsevsymp/Newtotal * 100,
         nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%').
 
+    % Calculate percentage of people with underlying conditions
+        percentage_underlying_conditions(P) :-
+        statistics(_, _, _, _, , Total),
+        statistics(, _, _, _, _, Underlying),
+        P is (Underlying / Total) * 100.
+        
+        %The percentage of affected persons that have underlying conditions
+        percentage_underlying_conditions(P) :-
+        findall(1, (infection(I), infection_type(I, T), covid_symptoms(T, _), underlying_conditions(T, _)), Infected),
+        length(Infected, InfectedCount),
+        findall(1, (infection(I), infection_type(I, T), covid_symptoms(T, _)), Total),
+        length(Total, TotalCount),
+        (TotalCount > 0 -> P is (InfectedCount / TotalCount) * 100 ; P is 0).
+
+        %The top three underlying conditions of affected persons
 
 %Function to give advice to MOH and alert authorities
     covid_advice(Symptoms) :-
@@ -317,9 +338,9 @@ save_fact(TI):-
     count_reports(Symptoms, Count),
     (   Count > 5
     ->  alert_authorities(Symptoms, Count),
-        write('There is a spike in reports of persons with '), write(Symptoms), nl,
-        write('The authorities have been alerted.'), nl
-    ;   write('There are '), write(Count), write(' reports of persons with '), write(Symptoms), nl
+        writeln('There is a spike in reports of persons with '), write(Symptoms), nl,
+        writeln('The authorities have been alerted.'), nl
+    ;   writeln('There are '), write(Count), write(' reports of persons with '), write(Symptoms), nl
     ).
 
     count_reports(Symptoms, Count) :-
@@ -330,10 +351,8 @@ save_fact(TI):-
         % Check if the count of symptoms is above a certain threshold
     Count >= 3,
     % Construct a message with the symptoms and the count
-    format('Alert! Patient has ~w symptoms: ~w', [Count, Symptoms]),
-    % Send the message to the authorities (in this case, just printing it to the console)
-    writeln('Message sent to authorities.'),
+    format('Alert!! Patient has ~w symptoms: ~w', [Count, Symptoms]),
+    % Send the message to the authorities (printing to the console)
+    nl, writeln('Message sent to authorities.'),
     % Return true to indicate success
     true.
-
-
