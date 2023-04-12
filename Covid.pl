@@ -9,9 +9,8 @@
 :-dynamic statistics/3.
 :-dynamic statistics/4.
 :-dynamic statistics/5.
-:-dynamic statistics/6.
 
-statistics(0,0,0,0,0,0).
+statistics(0,0,0,0,0).
 
 infection(covid).
 
@@ -180,7 +179,7 @@ addfacts:-
 save_fact(TI):-
     new(C, dialog('Update Knowledgebase')),
     send(C,append,new(Lbl1,label)),   send(Lbl1,append,TI),
-    send(C,append, new(T, text('Added to knowledgebase'))),
+    send(C,append, new(TI, text('Added to knowledgebase'))),
     send(C,open).
 
 %Diagnosis dialog
@@ -252,7 +251,7 @@ save_fact(TI):-
 
         Temperature is (Fahrenheit - 32) * 5/9,
         (Temperature >=100.4 -> Tempval is 1; Tempval is 0),
-        send(A,append,new(Lbl511,label)), send(Lbl511,append,'Your temperature is : '),
+        send(A,append,new(Lbl511,label)), send(Lbl511,append,'Your temperature in celsius is : '),
         send(A,append,new(Lbl512,label)), send(Lbl512,append,Temperature),
 
         (Fever == 'yes' -> Feval is 1;Feval is 0),
@@ -299,66 +298,38 @@ save_fact(TI):-
         Newomivar is Omivar + Oval,
         Newmildsymp is Mildsymp + Mval,
         Newsevsymp is Sevsymp + Sevval,
-        retractall(statistics(,,,,_)),asserta(statistics(Newtotal,NewKrakvar,Newomivar,Newmildsymp,Newsevsymp)).
+        retractall(statistics(,,,,_)),asserta(statistics(Newtotal,Newkrakvar,Newomivar,Newmildsymp,Newsevsymp)).
 
         displaystats:-
-<<<<<<< HEAD
-        statistics(Newtotal,NewKrakvar, Newomivar,Newmildsymp,Newsevsymp),
-=======
         statistics(Newtotal,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp),
->>>>>>> 0964378ded2b0fea287dfdec65036ace7bed0f90
         nl,write('The Total number of people with Covid-19 is: '), write(Newtotal),
-     
-        Krakpercent is NewKrakvar/Newtotal * 100,
+
+        Krakpercent is Newkrakvar/Newtotal * 100,
         nl,nl,write('The percentage of Kraken variant recorded: '), write(Krakpercent),write('%'),
-    
+
         Omipercent is Newomivar/Newtotal * 100,
         nl,nl,write('The percentage of Omicron variant recorded: '), write(Omipercent),write('%'),
-              
+
         Mildpercent is Newmildsymp/Newtotal * 100,
         nl,write('The percentage of Mild Symptoms recorded: '), write(Mildpercent),write('%'),
+
         Sevpercent is Newsevsymp/Newtotal * 100,
         nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%').
 
-    % Calculate percentage of people with underlying conditions
+        % Calculate percentage of people with underlying conditions
         percentage_underlying_conditions(P) :-
-        statistics(_, _, _, _, , Total),
-        statistics(, _, _, _, _, Underlying),
+        statistics(_,_,_,_,_,Total),
+        statistics(_,_,_,_,_,Underlying),
         P is (Underlying / Total) * 100.
-        
-        %The percentage of affected persons that have underlying conditions
-        percentage_underlying_conditions(P) :-
-        findall(1, (infection(I), infection_type(I, T), covid_symptoms(T, _), underlying_conditions(T, _)), Infected),
-        length(Infected, InfectedCount),
-        findall(1, (infection(I), infection_type(I, T), covid_symptoms(T, _)), Total),
-        length(Total, TotalCount),
-        (TotalCount > 0 -> P is (InfectedCount / TotalCount) * 100 ; P is 0).
 
-        %The top three underlying conditions of affected persons
-
-         % Calculate percentage of people with underlying conditions
-        percentage_underlying_conditions(P) :-
-        statistics(_, _, _, _, , Total),
-        statistics(, _, _, _, _, Underlying),
-        P is (Underlying / Total) * 100.
-        
-        %The percentage of affected persons that have underlying conditions
-        percentage_underlying_conditions(P) :-
-        findall(1, (infection(I), infection_type(I, T), covid_symptoms(T, _), underlying_conditions(T, _)), Infected),
-        length(Infected, InfectedCount),
-        findall(1, (infection(I), infection_type(I, T), covid_symptoms(T, _)), Total),
-        length(Total, TotalCount),
-        (TotalCount > 0 -> P is (InfectedCount / TotalCount) * 100 ; P is 0).
-
-        
     %The top three underlying conditions of affected persons
     top_conditions(TopThree) :-
-    findall(Count-Condition, (statistics(0,0,0,0,0,Count), underlying_conditions(_, Condition)), Counts),
+    findall(Count-Condition, (statistics(0,0,0,0,Count), underlying_conditions(_, Condition)), Counts),
     keysort(Counts, SortedCounts),
     reverse(SortedCounts, Reversed),
     take(3, Reversed, TopThree).
 
-take(N, List, SubList) :-
+    take(N, List, SubList) :-
     length(SubList, N),
     append(SubList, _, List).
 
