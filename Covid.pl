@@ -325,7 +325,7 @@ save_fact(TI):-
 
     %The top three underlying conditions of affected persons
     top_conditions(TopThree) :-
-    findall(Count-Condition, (statistics(0,0,0,0,Count), underlying_conditions(_, Condition)), Counts),
+    findall(Count-Condition, (statistics(0,0,0,0,0,Count), underlying_conditions(_, Condition)), Counts),
     keysort(Counts, SortedCounts),
     reverse(SortedCounts, Reversed),
     take(3, Reversed, TopThree).
