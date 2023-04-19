@@ -4,13 +4,9 @@
 %Sabrina Johnson - 1901165
 
 :-use_module(library(pce)).
-:-dynamic statistics/1.
-:-dynamic statistics/2.
-:-dynamic statistics/3.
-:-dynamic statistics/4.
-:-dynamic statistics/5.
+:-dynamic statistics/6.
 
-statistics(0,0,0,0,0).
+statistics(0,0,0,0,0,0).
 
 infection(covid).
 
@@ -45,10 +41,6 @@ underlying_conditions(omicron,dementia) :-
 assertz(statistics(0,0,0,0,0,1)).
 underlying_conditions(omicron,diabetes) :-
 assertz(statistics(0,0,0,0,0,1)).
-underlying_conditions(omicron,alzheimers) :-
-assertz(statistics(0,0,0,0,0,1)).
-underlying_conditions(omicron,hiv) :-
-assertz(statistics(0,0,0,0,0,1)).
 underlying_conditions(omicron,'heart conditions') :-
 assertz(statistics(0,0,0,0,0,1)).
 underlying_conditions(omicron,'chronic liver disease') :-
@@ -74,6 +66,7 @@ menu:-
     send(M,append,button(underlying_Conditions, message(@prolog,unconditions))),
     send(M,append,button(covid_facts, message(@prolog,coviddetails))),
     send(M,append,new(label)),
+    send(M, append, button(exit, message(M, destroy))),
     send(M,open).
 
 coviddetails:-
@@ -205,8 +198,6 @@ save_fact(TI):-
     send(D,append,new(Cancer,menu('Do you have Cancer',marked))),
     send(D,append,new(Dementia,menu('Do you suffer from Dementia',marked))),
     send(D,append,new(Diabetes,menu('Do you suffer from Diabetes',marked))),
-    send(D,append,new(Alzheimers,menu('Do you suffer from Alzheimers',marked))),
-    send(D,append,new(Hiv,menu('Do you have Hiv',marked))),
     send(D,append,new(Heart_conditions,menu('Do you suffer from Heart Conditions',marked))),
     send(D,append,new(Chronic_liver_disease,menu('Do you suffer from chronic Liver Disease',marked))),
 
@@ -224,8 +215,6 @@ save_fact(TI):-
     send(Cancer,append,yes),                send(Cancer,append,no),
     send(Dementia,append,yes),              send(Dementia,append,no),
     send(Diabetes,append,yes),              send(Diabetes,append,no),
-    send(Alzheimers,append,yes),            send(Alzheimers,append,no),
-    send(Hiv,append,yes),                   send(Hiv,append,no),
     send(Heart_conditions,append,yes),      send(Heart_conditions,append,no),
     send(Chronic_liver_disease,append,yes), send(Chronic_liver_disease,append,no),
 
@@ -260,7 +249,7 @@ save_fact(TI):-
 
         (Fatigue==  'yes' -> Tiredval is 1;Tiredval is 0),
 
-        (Loss_of_taste == 'yes' ->   Shortval is 1; Shortval is 0),
+        (Loss_of_taste == 'yes' -> Shortval is 1; Shortval is 0),
 
         (Headache == 'yes' -> Pressval is 1; Pressval is 0),
 
@@ -280,47 +269,59 @@ save_fact(TI):-
         send(A,append,new(Lbl15,label)),
 
         ((Infect >=3, Sneeval = 1) ->
-            send(Lbl15,append,'You are at risk for COVID (Omicron)'),Tval is 1, Oval is 1,Sevval is 1;
+        send(Lbl15,append,'You are at risk for COVID (Omicron)'),Tval is 1, Oval is 1,Sevval is 1;
 
         (Infect >=3, Sval = 1 , Dihval = 1) ->
             send(Lbl15,append,'You are at risk for COVID (kraken)'),Tval is 1, Kval is 1, Mval is 1;
 
-        (Infect =< 3 ->
-        send(Lbl15,append,'You are not at risk for COVID'));
+        (Infect =< 3) ->
+            (send(Lbl15,append,'You are not at risk for COVID'), Tval is 0, Kval is 0, Oval is 0, Mval is 0, Sevval is 0);
 
-        send(Lbl15,append,'You are at risk for COVID'),Tval is 1, Mval is 1),
-
+        (send(Lbl15,append,'You are at risk for COVID'),Tval is 1, Mval is 1)),
         send(A,open),
+
         updatestats(Tval, Kval, Oval, Mval, Sevval).
 
-        updatestats(Tval, Kval, Oval, Mval, Sevval):-  statistics(Total,Krakvar,Omivar,Mildsymp,Sevsymp), Newtotal is Total + Tval,
+
+        updatestats(Tval, Kval, Oval, Mval, Sevval) :-
+        statistics(Total, Krakvar, Omivar, Mildsymp, Sevsymp, Count),
+        Newtotal is Total + Tval,
         Newkrakvar is Krakvar + Kval,
         Newomivar is Omivar + Oval,
         Newmildsymp is Mildsymp + Mval,
         Newsevsymp is Sevsymp + Sevval,
-        retractall(statistics(,,,,_)),asserta(statistics(Newtotal,Newkrakvar,Newomivar,Newmildsymp,Newsevsymp)).
+        Newcount is Count + 1,
+        retractall(statistics(_, _, _, _, _, _)),
+        asserta(statistics(Newtotal, Newkrakvar, Newomivar, Newmildsymp, Newsevsymp, Newcount)).
 
-        displaystats:-
-        statistics(Newtotal,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp),
+
+    displaystats:-
+    (statistics(_, _, _, _, _, _) -> 
+        statistics(Newtotal,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp,Newcount),
         nl,write('The Total number of people with Covid-19 is: '), write(Newtotal),
+        (Newtotal =:= 0 -> 
+            write(', no statistics to display')
+        ;
+            Krakpercent is Newkrakvar/Newtotal * 100,
+            nl,nl,write('The percentage of Kraken variant recorded: '), write(Krakpercent),write('%'),
 
-        Krakpercent is Newkrakvar/Newtotal * 100,
-        nl,nl,write('The percentage of Kraken variant recorded: '), write(Krakpercent),write('%'),
+            Omipercent is Newomivar/Newtotal * 100,
+            nl,nl,write('The percentage of Omicron variant recorded: '), write(Omipercent),write('%'),
 
-        Omipercent is Newomivar/Newtotal * 100,
-        nl,nl,write('The percentage of Omicron variant recorded: '), write(Omipercent),write('%'),
+            Mildpercent is Newmildsymp/Newtotal * 100,
+            nl,write('The percentage of Mild Symptoms recorded: '), write(Mildpercent),write('%'),
 
-        Mildpercent is Newmildsymp/Newtotal * 100,
-        nl,write('The percentage of Mild Symptoms recorded: '), write(Mildpercent),write('%'),
+            Sevpercent is Newsevsymp/Newtotal * 100,
+            nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%')
+        )
+    );
+    write('').
 
-        Sevpercent is Newsevsymp/Newtotal * 100,
-        nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%').
-
-        % Calculate percentage of people with underlying conditions
-        percentage_underlying_conditions(P) :-
-        statistics(_,_,_,_,_,Total),
-        statistics(_,_,_,_,_,Underlying),
-        P is (Underlying / Total) * 100.
+    % Calculate percentage of people with underlying conditions
+    percentage_underlying_conditions(P) :-
+    statistics(_,_,_,_,_,Total),
+    statistics(_,_,_,_,_,Underlying),
+    P is (Underlying / Total) * 100.
 
     %The top three underlying conditions of affected persons
     top_conditions(TopThree) :-
