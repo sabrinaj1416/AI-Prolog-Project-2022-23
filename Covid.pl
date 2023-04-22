@@ -295,66 +295,34 @@ save_fact(TI):-
         asserta(statistics(Newtotal, Newkrakvar, Newomivar, Newmildsymp, Newsevsymp, Newcount)).
 
 
-    displaystats:-
-    (statistics(_, _, _, _, _, _) -> 
-        statistics(Newtotal,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp,Newcount),
-        nl,write('The Total number of people with Covid-19 is: '), write(Newtotal),
-        (Newtotal =:= 0 -> 
-            write(', no statistics to display')
-        ;
-            Krakpercent is Newkrakvar/Newtotal * 100,
-            nl,nl,write('The percentage of Kraken variant recorded: '), write(Krakpercent),write('%'),
+    displaystats :-
+    statistics(Total, Mild, Severe, Kraken, Omicron, Underlying),
+    Total > 0, % make sure we have data
+    format('Percentage of persons with mild symptoms: ~2f%~n', [Mild / Total * 100]),
+    format('Percentage of persons with severe symptoms: ~2f%~n', [Severe / Total * 100]),
+    format('Percentage of persons with the Kraken variant: ~2f%~n', [Kraken / Total * 100]),
+    format('Percentage of persons with the Omicron variant: ~2f%~n', [Omicron / Total * 100]),
+    format('Percentage of affected persons that have underlying conditions: ~2f%~n', [Underlying / Total * 100]),
+    findall(Count-Cond, underlying_conditions(omicron, Cond, Count), Pairs),
+    sort(Pairs, SortedPairs),
+    reverse(SortedPairs, ReversePairs),
+    take(3, ReversePairs, Top3Pairs),
+    format('Top 3 underlying conditions of affected persons:~n'),
+    print_top_conditions(Top3Pairs),
+    nl.
 
-            Omipercent is Newomivar/Newtotal * 100,
-            nl,nl,write('The percentage of Omicron variant recorded: '), write(Omipercent),write('%'),
+% helper predicate to print the top 3 underlying conditions
+print_top_conditions([]).
+print_top_conditions([Count-Cond|Rest]) :-
+    format('* ~w: ~d cases~n', [Cond, Count]),
+    print_top_conditions(Rest).
 
-            Mildpercent is Newmildsymp/Newtotal * 100,
-            nl,write('The percentage of Mild Symptoms recorded: '), write(Mildpercent),write('%'),
-
-            Sevpercent is Newsevsymp/Newtotal * 100,
-            nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%')
-        )
-    );
-    write('').
-
-    % Calculate percentage of people with underlying conditions
-    percentage_underlying_conditions(P) :-
-    statistics(_,_,_,_,_,Total),
-    statistics(_,_,_,_,_,Underlying),
-    P is (Underlying / Total) * 100.
-
-    %The top three underlying conditions of affected persons
-    top_conditions(TopThree) :-
-    findall(Count-Condition, (statistics(0,0,0,0,0,Count), underlying_conditions(_, Condition)), Counts),
-    keysort(Counts, SortedCounts),
-    reverse(SortedCounts, Reversed),
-    take(3, Reversed, TopThree).
-
-    take(N, List, SubList) :-
-    length(SubList, N),
-    append(SubList, _, List).
-
-%Function to give advice to MOH and alert authorities
-    covid_advice(Symptoms) :-
-    assert(reports(Symptoms)),
-    count_reports(Symptoms, Count),
-    (   Count > 5
-    ->  alert_authorities(Symptoms, Count),
-        writeln('There is a spike in reports of persons with '), write(Symptoms), nl,
-        writeln('The authorities have been alerted.'), nl
-    ;   writeln('There are '), write(Count), write(' reports of persons with '), write(Symptoms), nl
-    ).
-
-    count_reports(Symptoms, Count) :-
-        findall(1, reports(Symptoms), List),
-        length(List, Count).
-
-    alert_authorities(Symptoms, Count) :-
-        % Check if the count of symptoms is above a certain threshold
-    Count >= 3,
-    % Construct a message with the symptoms and the count
-    format('Alert!! Patient has ~w symptoms: ~w', [Count, Symptoms]),
-    % Send the message to the authorities (printing to the console)
-    nl, writeln('Message sent to authorities.'),
-    % Return true to indicate success
-    true.
+% helper predicate to take the first N items from a list
+take(_, [], []).
+take(N, [X|Xs], [X|Ys]) :-
+    N > 0,
+    N1 is N - 1,
+    take(N1, Xs, Ys).
+    
+displaystats :-
+    write('No statistics to display.').
