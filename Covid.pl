@@ -326,3 +326,23 @@ take(N, [X|Xs], [X|Ys]) :-
     
 displaystats :-
     write('No statistics to display.').
+advice(Status, Action) :-
+    % If the outbreak status is "low"
+    Status == "low",
+    % Then recommend basic precautions
+    Action = "Continue to practice basic precautions such as washing hands frequently, wearing masks, and maintaining social distancing.",
+    write(Action).
+
+advice(Status, Action) :-
+    % If the outbreak status is "medium"
+    Status == "medium",
+    % Then recommend stricter measures
+    Action = "Implement stricter measures such as restricting travel, closing non-essential businesses, and increasing testing and contact tracing.",
+    write(Action).
+
+advice(Status, Action) :-
+    % If the outbreak status is "high"
+    Status == "high",
+    % Then recommend the strictest measures
+    Action = "Implement the strictest measures such as lockdowns, mandatory mask-wearing, and curfews to contain the spread of the virus.",
+    write(Action).
