@@ -182,6 +182,8 @@ save_fact(TI):-
     send(D,append,new(Age, text_item(age))),
     send(D,append,new(Sex, menu(sex,marked))),
     send(D,append,new(Fahrenheit, text_item(fahrenheit))),
+    send(D,append,new(Systolic, text_item(systolic))),
+    send(D,append,new(Diastolic, text_item(diastolic))),
     send(D,append,new(Fever,menu('Do you have fever',marked))),
     send(D,append,new(Cough,menu('Do you have Dry cough',marked))),
     send(D,append,new(Fatigue,menu('Do you get tired easy',marked))),
@@ -358,3 +360,23 @@ save_fact(TI):-
     nl, writeln('Message sent to authorities.'),
     % Return true to indicate success
     true.
+
+%Checks if the patient has high/low blood pressure
+check_blood_pressure(Systolic, Diastolic, "Has high blood pressure") :- Systolic > 129, !.
+check_blood_pressure(Systolic, Diastolic,"Has high blood pressure") :- Diastolic > 79, !.
+check_blood_pressure(Systolic, Diastolic, "Has normal blood pressure") :- Systolic =< 129, Diastolic =< 79, !.
+check_blood_pressure(Systolic, Diastolic, "Has low blood pressure") :- Systolic < 90, Diastolic < 60.
+
+%
+has_high_blood_pressure(Systolic, Diastolic) :-
+    (Systolic > 129 ; Diastolic > 79),
+    write('You have high blood pressure.').
+
+has_high_blood_pressure(Systolic, Diastolic) :-
+    (Systolic < 90 ; Diastolic < 60),
+    write('You have low blood pressure.').
+
+has_high_blood_pressure(Systolic, Diastolic) :-
+    Systolic >= 90, Systolic =< 129,
+    Diastolic >= 60, Diastolic =< 79,
+    write('Your blood pressure is normal.').
