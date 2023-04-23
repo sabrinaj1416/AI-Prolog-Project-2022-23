@@ -329,7 +329,6 @@ take(N, [X|Xs], [X|Ys]) :-
     N1 is N - 1,
     take(N1, Xs, Ys).
 
-
 advice(Status, Action) :-
     % If the outbreak status is "low"
     Status == "low",
