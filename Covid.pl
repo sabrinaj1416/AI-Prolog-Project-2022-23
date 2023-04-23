@@ -5,6 +5,7 @@
 
 :-use_module(library(pce)).
 :-dynamic statistics/6.
+:- dynamic report/1.
 
 statistics(0,0,0,0,0,0).
 
@@ -182,8 +183,10 @@ save_fact(TI):-
     send(D,append,new(Age, text_item(age))),
     send(D,append,new(Sex, menu(sex,marked))),
     send(D,append,new(Fahrenheit, text_item(fahrenheit))),
+
     send(D,append,new(Fever,menu('Do you have fever',marked))),
     send(D,append,new(Cough,menu('Do you have Dry cough',marked))),
+
     send(D,append,new(Fatigue,menu('Do you get tired easy',marked))),
     send(D,append,new(Loss_of_taste,menu('Do you loss of taste',marked))),
     send(D,append,new(Headache,menu('Do you have a headache',marked))),
@@ -280,10 +283,10 @@ save_fact(TI):-
         (send(Lbl15,append,'You are at risk for COVID'),Tval is 1, Mval is 1)),
         send(A,open),
 
-        updatestats(Tval, Kval, Oval, Mval, Sevval).
+        updatestats(Tval, Kval, Oval, Mval, Sevval, Count).
 
 
-        updatestats(Tval, Kval, Oval, Mval, Sevval) :-
+        updatestats(Tval, Kval, Oval, Mval, Sevval, Count) :-
         statistics(Total, Krakvar, Omivar, Mildsymp, Sevsymp, Count),
         Newtotal is Total + Tval,
         Newkrakvar is Krakvar + Kval,
@@ -294,67 +297,60 @@ save_fact(TI):-
         retractall(statistics(_, _, _, _, _, _)),
         asserta(statistics(Newtotal, Newkrakvar, Newomivar, Newmildsymp, Newsevsymp, Newcount)).
 
-
-    displaystats:-
-    (statistics(_, _, _, _, _, _) -> 
-        statistics(Newtotal,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp,Newcount),
-        nl,write('The Total number of people with Covid-19 is: '), write(Newtotal),
-        (Newtotal =:= 0 -> 
+        displaystats :-
+    statistics(Newtotal, Newmildsymp, Newsevsymp, NewKrakvar, Newomivar, Newcount),
+     (Newtotal =:= 0 ->
             write(', no statistics to display')
         ;
-            Krakpercent is Newkrakvar/Newtotal * 100,
-            nl,nl,write('The percentage of Kraken variant recorded: '), write(Krakpercent),write('%'),
+    Newtotal > 0, % make sure we have data
+    format('Percentage of persons with mild symptoms: ~2f%~n', [Newmildsymp / Newtotal * 100]),
+    format('Percentage of persons with severe symptoms: ~2f%~n', [Newsevsymp / Newtotal * 100]),
+    format('Percentage of persons with the Kraken variant: ~2f%~n', [NewKrakvar / Newtotal * 100]),
+    format('Percentage of persons with the Omicron variant: ~2f%~n', [Newomivar / Newtotal * 100]),
+    format('Percentage of affected persons that have underlying conditions: ~2f%~n', [Underlying / Newtotal * 100]),
+    findall(Count-Cond, underlying_conditions(omicron, Cond, Count), Pairs),
+    sort(Pairs, SortedPairs),
+    reverse(SortedPairs, ReversePairs),
+    take(3, ReversePairs, Top3Pairs),
+    format('Top 3 underlying conditions of affected persons:~n'),
+    print_top_conditions(Top3Pairs),
+    nl).
 
-            Omipercent is Newomivar/Newtotal * 100,
-            nl,nl,write('The percentage of Omicron variant recorded: '), write(Omipercent),write('%'),
+% helper predicate to print the top 3 underlying conditions
+print_top_conditions([]).
+print_top_conditions([Count-Cond|Rest]) :-
+    format('* ~w: ~d cases~n', [Cond, Count]),
+    print_top_conditions(Rest).
 
-            Mildpercent is Newmildsymp/Newtotal * 100,
-            nl,write('The percentage of Mild Symptoms recorded: '), write(Mildpercent),write('%'),
+% helper predicate to take the first N items from a list
+take(_, [], []).
+take(N, [X|Xs], [X|Ys]) :-
+    N > 0,
+    N1 is N - 1,
+    take(N1, Xs, Ys).
 
-            Sevpercent is Newsevsymp/Newtotal * 100,
-            nl,write('The percentage of Severe Symptoms recorded: '), write(Sevpercent),write('%')
-        )
-    );
-    write('').
 
-    % Calculate percentage of people with underlying conditions
-    percentage_underlying_conditions(P) :-
-    statistics(_,_,_,_,_,Total),
-    statistics(_,_,_,_,_,Underlying),
-    P is (Underlying / Total) * 100.
+advice(Status, Action) :-
+    % If the outbreak status is "low"
+    Status == "low",
+    % Then recommend basic precautions
+    Action = "Continue to practice basic precautions such as washing hands frequently, wearing masks, and maintaining social distancing.",
+    write(Action).
 
-    %The top three underlying conditions of affected persons
-    top_conditions(TopThree) :-
-    findall(Count-Condition, (statistics(0,0,0,0,0,Count), underlying_conditions(_, Condition)), Counts),
-    keysort(Counts, SortedCounts),
-    reverse(SortedCounts, Reversed),
-    take(3, Reversed, TopThree).
+advice(Status, Action) :-
+    % If the outbreak status is "medium"
+    Status == "medium",
+    % Then recommend stricter measures
+    Action = "Implement stricter measures such as restricting travel, closing non-essential businesses, and increasing testing and contact tracing.",
+    write(Action).
 
-    take(N, List, SubList) :-
-    length(SubList, N),
-    append(SubList, _, List).
+advice(Status, Action) :-
+    % If the outbreak status is "high"
+    Status == "high",
+    % Then recommend the strictest measures
+    Action = "Implement the strictest measures such as lockdowns, mandatory mask-wearing, and curfews to contain the spread of the virus.",
+    write(Action).
 
-%Function to give advice to MOH and alert authorities
-    covid_advice(Symptoms) :-
-    assert(reports(Symptoms)),
-    count_reports(Symptoms, Count),
-    (   Count > 5
-    ->  alert_authorities(Symptoms, Count),
-        writeln('There is a spike in reports of persons with '), write(Symptoms), nl,
-        writeln('The authorities have been alerted.'), nl
-    ;   writeln('There are '), write(Count), write(' reports of persons with '), write(Symptoms), nl
-    ).
-
-    count_reports(Symptoms, Count) :-
-        findall(1, reports(Symptoms), List),
-        length(List, Count).
-
-    alert_authorities(Symptoms, Count) :-
-        % Check if the count of symptoms is above a certain threshold
-    Count >= 3,
-    % Construct a message with the symptoms and the count
-    format('Alert!! Patient has ~w symptoms: ~w', [Count, Symptoms]),
-    % Send the message to the authorities (printing to the console)
-    nl, writeln('Message sent to authorities.'),
-    % Return true to indicate success
-    true.
+alert :-
+    write('ALERT: Spike in reports of persons prone to COVID-19!'),
+nl, write('Alert sent to MOH.').
