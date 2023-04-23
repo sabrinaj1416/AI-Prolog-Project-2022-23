@@ -182,6 +182,8 @@ save_fact(TI):-
     send(D,append,new(Age, text_item(age))),
     send(D,append,new(Sex, menu(sex,marked))),
     send(D,append,new(Fahrenheit, text_item(fahrenheit))),
+    send(D,append,new(Systolic, text_item(systolic))),
+    send(D,append,new(Diastolic, text_item(diastolic))),
     send(D,append,new(Fever,menu('Do you have fever',marked))),
     send(D,append,new(Cough,menu('Do you have Dry cough',marked))),
     send(D,append,new(Fatigue,menu('Do you get tired easy',marked))),
@@ -220,16 +222,17 @@ save_fact(TI):-
 
     send(Age, type, int),
     send(Fahrenheit, type, int),
-
+    send(Systolic, type, int),
+    send(Diastolic, type, int),
 
     send(D,append,button(accept,message(@prolog,save_main,   Name?selection, Fever?selection, Cough?selection,
                                         Fatigue?selection, Loss_of_taste?selection,
                                         Headache?selection , Sex?selection, Fahrenheit?selection, Sore_throat?selection,
-                                        Runny_nose?selection,Diarrhea?selection, Sneezing?selection))),
+                                        Runny_nose?selection,Diarrhea?selection, Sneezing?selection,Systolic?selection,Diastolic?selection))),
 
     send(D,open).
 
-    save_main(Name,Fever,Cough,Fatigue,Loss_of_taste,Headache,Sex,Fahrenheit,Sore_throat,Runny_nose,Diarrhea,Sneezing):-
+    save_main(Name,Fever,Cough,Fatigue,Loss_of_taste,Headache,Sex,Fahrenheit,Sore_throat,Runny_nose,Diarrhea,Sneezing,Systolic,Diastolic):-
 
         new(A,dialog('Diagnosis of Results')),
         send(A,append,new(Lbl1234,label)),send(Lbl1234,append,'Name :'),
@@ -280,6 +283,8 @@ save_fact(TI):-
         (send(Lbl15,append,'You are at risk for COVID'),Tval is 1, Mval is 1)),
         send(A,open),
 
+        has_high_blood_pressure(Systolic, Diastolic).
+
         updatestats(Tval, Kval, Oval, Mval, Sevval).
 
 
@@ -296,10 +301,10 @@ save_fact(TI):-
 
 
     displaystats:-
-    (statistics(_, _, _, _, _, _) -> 
+    (statistics(_, _, _, _, _, _) ->
         statistics(Newtotal,Newkrakvar, Newomivar,Newmildsymp,Newsevsymp,Newcount),
         nl,write('The Total number of people with Covid-19 is: '), write(Newtotal),
-        (Newtotal =:= 0 -> 
+        (Newtotal =:= 0 ->
             write(', no statistics to display')
         ;
             Krakpercent is Newkrakvar/Newtotal * 100,
@@ -358,3 +363,23 @@ save_fact(TI):-
     nl, writeln('Message sent to authorities.'),
     % Return true to indicate success
     true.
+
+%Checks if the patient has high/low blood pressure
+check_blood_pressure(Systolic, Diastolic, "Has high blood pressure") :- Systolic > 129, !.
+check_blood_pressure(Systolic, Diastolic,"Has high blood pressure") :- Diastolic > 79, !.
+check_blood_pressure(Systolic, Diastolic, "Has normal blood pressure") :- Systolic =< 129, Diastolic =< 79, !.
+check_blood_pressure(Systolic, Diastolic, "Has low blood pressure") :- Systolic < 90, Diastolic < 60.
+
+%
+has_high_blood_pressure(Systolic, Diastolic) :-
+    (Systolic > 129 ; Diastolic > 79),
+    write('You have high blood pressure.').
+
+has_high_blood_pressure(Systolic, Diastolic) :-
+    (Systolic < 90 ; Diastolic < 60),
+    write('You have low blood pressure.').
+
+has_high_blood_pressure(Systolic, Diastolic) :-
+    Systolic >= 90, Systolic =< 129,
+    Diastolic >= 60, Diastolic =< 79,
+    write('Your blood pressure is normal.').
