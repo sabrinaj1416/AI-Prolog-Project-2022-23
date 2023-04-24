@@ -2,6 +2,8 @@
 %Kevin Campbell - 1900390
 %Mario Cross - 1901901
 %Sabrina Johnson - 1901165
+%Tutor: Mr. Howard James
+%Date: April 24, 2023
 
 :-use_module(library(pce)).
 :-dynamic statistics/6.
@@ -310,12 +312,26 @@ save_fact(TI):-
             write('There are no statistics to display at this time.')
         ;
     Newtotal > 0, % make sure we have data
+    format('COVID-19 Statistics:\n', []),
+    format('------------------------------------------------------\n', []),
+    write('Total number of diagnosed cases: '), write(Newtotal), nl,
     format('Percentage of persons with mild symptoms: ~2f%~n', [Newmildsymp / Newtotal * 100]),
     format('Percentage of persons with severe symptoms: ~2f%~n', [Newsevsymp / Newtotal * 100]),
     format('Percentage of persons with the Kraken variant: ~2f%~n', [NewKrakvar / Newtotal * 100]),
     format('Percentage of persons with the Omicron variant: ~2f%~n', [Newomivar / Newtotal * 100]),
     format('Percentage of affected persons that have underlying conditions: ~2f%~n', [Underlying / Newtotal * 100]),
     nl).
+
+
+displaystats_1 :-
+    write('Statistics for Covid variant:'), nl,
+    statistics(O1, O2, O3, O4, O5, O6),
+    write('Regular: '), write(O1), nl,
+    write('Kraken: '), write(O2), nl,
+    write('Omicron: '), write(O3), nl,
+    write('Total: '), write(O4), nl,
+    write('Patients with underlying conditions: '), write(O5), nl,
+    write('Deaths: '), write(O6), nl.
 
 % Function to output the top three underlying conditions of affected persons
 top_three_conditions :-
