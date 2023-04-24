@@ -350,6 +350,17 @@ advice(Status, Action) :-
     Action = "Implement the strictest measures such as lockdowns, mandatory mask-wearing, and curfews to contain the spread of the virus.",
     write(Action).
 
-alert :-
+
+alert(Status) :-
+    % If the outbreak status is "medium" or "high"
+    (Status == "medium"; Status == "high"),
+    % Then display the alert
     write('ALERT: Spike in reports of persons prone to COVID-19!'),
-nl, write('Alert sent to MOH.').
+    nl, write('Alert sent to MOH.').
+
+alert(Status) :-
+    % If the outbreak status is "low"
+    Status == "low",
+    % Then display the alternative alert
+    write('ALERT: There is no spike in COVID-19 cases!'),
+    nl, write('No action required.').
