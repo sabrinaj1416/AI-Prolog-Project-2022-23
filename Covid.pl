@@ -304,7 +304,7 @@ save_fact(TI):-
         asserta(statistics(Newtotal, Newkrakvar, Newomivar, Newmildsymp, Newsevsymp, Newcount)).
 
     %display stats function
-    displaystats :-
+      displaystats :-
     statistics(Newtotal, Newmildsymp, Newsevsymp, NewKrakvar, Newomivar, Newcount),
      (Newtotal =:= 0 ->
             write('There are no statistics to display at this time.')
@@ -315,6 +315,7 @@ save_fact(TI):-
     format('Percentage of persons with the Kraken variant: ~2f%~n', [NewKrakvar / Newtotal * 100]),
     format('Percentage of persons with the Omicron variant: ~2f%~n', [Newomivar / Newtotal * 100]),
     format('Percentage of affected persons that have underlying conditions: ~2f%~n', [Underlying / Newtotal * 100]),
+    nl).
 
 % Function to output the top three underlying conditions of affected persons
 top_three_conditions :-
