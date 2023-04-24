@@ -316,19 +316,6 @@ save_fact(TI):-
     format('Percentage of persons with the Omicron variant: ~2f%~n', [Newomivar / Newtotal * 100]),
     format('Percentage of affected persons that have underlying conditions: ~2f%~n', [Underlying / Newtotal * 100]),
 
-    %function to find the topthree underlying conditionss
-    %predicate is used to collect all the pairs returned by underlying_conditions/3 into a list called Pairs.
-    findall(Count-Cond, underlying_conditions(omicron, Cond, Count), Pairs),
-    %predicate is used to sort the list Pairs in ascending order based on the first element of each pair (Count).
-    sort(Pairs, SortedPairs),
-    %predicate is used to reverse the order of the pairs in SortedPairs. 
-    %This creates a new list called ReversePairs where the pairs with the largest counts come first.
-    reverse(SortedPairs, ReversePairs),
-    take(3, ReversePairs, Top3Pairs),
-    format('Top 3 underlying conditions of affected persons:~n'),
-    print_top_conditions(Top3Pairs),
-    nl).
-
 % Function to output the top three underlying conditions of affected persons
 top_three_conditions :-
     findall(Condition-Count, (
