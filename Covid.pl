@@ -7,10 +7,13 @@
 :-dynamic statistics/6.
 :- dynamic report/1.
 
+% initializes the statistics/6 predicate with six arguments, all of which are set to 0.
 statistics(0,0,0,0,0,0).
 
+%Facts
 infection(covid).
 
+%This code defines three facts for the infection_type/2 predicate, which associates the infection type covid with three different regular, kraken, and omicron types.
 infection_type(covid,regular).
 infection_type(covid,kraken).
 infection_type(covid,omicron).
@@ -146,13 +149,14 @@ Medical treatments
     send(F, scrollbars, vertical),
 send(F,open).
 
-
+%creates a graphical dialog window using the PCE library. The window is titled "Underlying Conditions".
 unconditions:-
     new(S,dialog('Underlying Conditions')),
     send(S,append,new(Lbl143,label)),send(Lbl143,append,'Underlying Conditions:'),
     send(S,append,button(show_conditions, message(@prolog, cond_list))),
     send(S,open).
 
+%that creates a graphical dialog window using the PCE library. 
 layoutdemo1 :-
         new(D, dialog('Layout Demo 1')),
         send(D, append,
@@ -163,7 +167,8 @@ layoutdemo1 :-
         send(BTS, append, button(add_kraken_fact, message(@prolog,addfacts))),
         send(BTS, alignment, center),
         send(D, open).
-
+        
+%add facts
 addfacts:-
         new(X,dialog('Enter Fact')),send(X,append,new(label)),
         send(X,append, new(TI, text_item(enter_fact, ''))),
@@ -285,6 +290,7 @@ save_fact(TI):-
 
         updatestats(Tval, Kval, Oval, Mval, Sevval, Count).
 
+        %Update statistics
 
         updatestats(Tval, Kval, Oval, Mval, Sevval, Count) :-
         statistics(Total, Krakvar, Omivar, Mildsymp, Sevsymp, Count),
@@ -297,7 +303,8 @@ save_fact(TI):-
         retractall(statistics(_, _, _, _, _, _)),
         asserta(statistics(Newtotal, Newkrakvar, Newomivar, Newmildsymp, Newsevsymp, Newcount)).
 
-        displaystats :-
+    %display stats function
+    displaystats :-
     statistics(Newtotal, Newmildsymp, Newsevsymp, NewKrakvar, Newomivar, Newcount),
      (Newtotal =:= 0 ->
             write('There are no statistics to display at this time.')
@@ -308,6 +315,8 @@ save_fact(TI):-
     format('Percentage of persons with the Kraken variant: ~2f%~n', [NewKrakvar / Newtotal * 100]),
     format('Percentage of persons with the Omicron variant: ~2f%~n', [Newomivar / Newtotal * 100]),
     format('Percentage of affected persons that have underlying conditions: ~2f%~n', [Underlying / Newtotal * 100]),
+
+    %function to find the topthree underlying conditionss
     findall(Count-Cond, underlying_conditions(omicron, Cond, Count), Pairs),
     sort(Pairs, SortedPairs),
     reverse(SortedPairs, ReversePairs),
@@ -329,6 +338,7 @@ take(N, [X|Xs], [X|Ys]) :-
     N1 is N - 1,
     take(N1, Xs, Ys).
 
+%advice function
 advice(Status, Action) :-
     % If the outbreak status is "low"
     Status == "low",
@@ -350,6 +360,7 @@ advice(Status, Action) :-
     Action = "Implement the strictest measures such as lockdowns, mandatory mask-wearing, and curfews to contain the spread of the virus.",
     write(Action).
 
+%alert function
 alert(Status) :-
     % If the outbreak status is "medium" or "high"
     (Status == "medium"; Status == "high"),
