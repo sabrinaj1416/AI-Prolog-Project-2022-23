@@ -300,7 +300,7 @@ save_fact(TI):-
         displaystats :-
     statistics(Newtotal, Newmildsymp, Newsevsymp, NewKrakvar, Newomivar, Newcount),
      (Newtotal =:= 0 ->
-            write(', no statistics to display')
+            write('There are no statistics to display at this time.')
         ;
     Newtotal > 0, % make sure we have data
     format('Percentage of persons with mild symptoms: ~2f%~n', [Newmildsymp / Newtotal * 100]),
@@ -349,7 +349,6 @@ advice(Status, Action) :-
     % Then recommend the strictest measures
     Action = "Implement the strictest measures such as lockdowns, mandatory mask-wearing, and curfews to contain the spread of the virus.",
     write(Action).
-
 
 alert(Status) :-
     % If the outbreak status is "medium" or "high"
