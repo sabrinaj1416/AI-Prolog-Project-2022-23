@@ -167,7 +167,7 @@ layoutdemo1 :-
         send(BTS, append, button(add_kraken_fact, message(@prolog,addfacts))),
         send(BTS, alignment, center),
         send(D, open).
-        
+
 %add facts
 addfacts:-
         new(X,dialog('Enter Fact')),send(X,append,new(label)),
@@ -317,26 +317,38 @@ save_fact(TI):-
     format('Percentage of affected persons that have underlying conditions: ~2f%~n', [Underlying / Newtotal * 100]),
 
     %function to find the topthree underlying conditionss
+    %predicate is used to collect all the pairs returned by underlying_conditions/3 into a list called Pairs.
     findall(Count-Cond, underlying_conditions(omicron, Cond, Count), Pairs),
+    %predicate is used to sort the list Pairs in ascending order based on the first element of each pair (Count).
     sort(Pairs, SortedPairs),
+    %predicate is used to reverse the order of the pairs in SortedPairs. 
+    %This creates a new list called ReversePairs where the pairs with the largest counts come first.
     reverse(SortedPairs, ReversePairs),
     take(3, ReversePairs, Top3Pairs),
     format('Top 3 underlying conditions of affected persons:~n'),
     print_top_conditions(Top3Pairs),
     nl).
 
-% helper predicate to print the top 3 underlying conditions
-print_top_conditions([]).
-print_top_conditions([Count-Cond|Rest]) :-
-    format('* ~w: ~d cases~n', [Cond, Count]),
-    print_top_conditions(Rest).
+% Function to output the top three underlying conditions of affected persons
+top_three_conditions :-
+    findall(Condition-Count, (
+        infection_type(covid, Variant),
+        covid_symptoms(Variant, _),
+        underlying_conditions(Variant, Condition),
+        statistics(Count, _, _, _, _)
+    ), ConditionCounts),
+    sort(2, @>=, ConditionCounts, SortedCounts),
+    format("Top three underlying conditions:~n"),
+    print_top_three(SortedCounts, 3).
 
-% helper predicate to take the first N items from a list
-take(_, [], []).
-take(N, [X|Xs], [X|Ys]) :-
-    N > 0,
+% Helper function to print the top n conditions in the list
+print_top_three([], _) :- !.
+print_top_three(_, 0) :- !.
+print_top_three([C-Count|T], N) :-
+    format("~w: ~w~n", [C, Count]),
     N1 is N - 1,
-    take(N1, Xs, Ys).
+    print_top_three(T, N1).
+
 
 %advice function
 advice(Status, Action) :-
