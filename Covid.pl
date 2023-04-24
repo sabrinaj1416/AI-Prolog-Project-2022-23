@@ -320,11 +320,9 @@ save_fact(TI):-
     format('Percentage of persons with the Kraken variant: ~2f%~n', [NewKrakvar / Newtotal * 100]),
     format('Percentage of persons with the Omicron variant: ~2f%~n', [Newomivar / Newtotal * 100]),
     format('Percentage of affected persons that have underlying conditions: ~2f%~n', [Underlying / Newtotal * 100]),
-    nl).
-
-
-displaystats_1 :-
-    write('Statistics for Covid variant:'), nl,
+    nl)
+    
+    nl,nl, write('Statistics for Covid variant:'), nl,
     statistics(O1, O2, O3, O4, O5, O6),
     write('Regular: '), write(O1), nl,
     write('Kraken: '), write(O2), nl,
@@ -333,26 +331,28 @@ displaystats_1 :-
     write('Patients with underlying conditions: '), write(O5), nl,
     write('Deaths: '), write(O6), nl.
 
-% Function to output the top three underlying conditions of affected persons
 top_three_conditions :-
-    findall(Condition-Count, (
-        infection_type(covid, Variant),
-        covid_symptoms(Variant, _),
-        underlying_conditions(Variant, Condition),
-        statistics(Count, _, _, _, _)
-    ), ConditionCounts),
-    sort(2, @>=, ConditionCounts, SortedCounts),
-    format("Top three underlying conditions:~n"),
-    print_top_three(SortedCounts, 3).
+    statistics(_, _, _, _, _, Total),
+    Total > 0,
+    findall(Condition-Count, (underlying_conditions(_, Condition), statistics(_, _, _, _, _, Count)), Conditions),
+    sort(2, @>=, Conditions, SortedConditions),
+    take(3, SortedConditions, TopThree),
+    write('Top 3 underlying conditions:'), nl,
+    print_top_three(TopThree).
 
-% Helper function to print the top n conditions in the list
-print_top_three([], _) :- !.
-print_top_three(_, 0) :- !.
-print_top_three([C-Count|T], N) :-
-    format("~w: ~w~n", [C, Count]),
-    N1 is N - 1,
-    print_top_three(T, N1).
+top_three_conditions :-
+    write('No underlying conditions found in statistics.').
 
+print_top_three([]).
+print_top_three([Condition-Count|Rest]) :-
+    format('~w appeared ~w times.~n', [Condition, Count]),
+    print_top_three(Rest).
+
+take(_, [], []).
+take(N, [_-X|Xs], [X|Ys]) :-
+    N > 0,
+    N1 is N-1,
+    take(N1, Xs, Ys).
 
 %advice function
 advice(Status, Action) :-
